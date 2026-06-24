@@ -20,7 +20,7 @@ impl EmbeddedFont {
     }
 }
 
-const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/NotoSansKR-Regular.otf");
+const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/SUIT-Regular.ttf");
 
 unsafe fn create_ui_font() -> HFONT {
     // 기본 UI 크기에서 과도하게 커지지 않도록 고정 높이 사용
@@ -38,7 +38,7 @@ unsafe fn create_ui_font() -> HFONT {
         CLIP_DEFAULT_PRECIS.0 as u32,
         CLEARTYPE_QUALITY.0 as u32,
         (DEFAULT_PITCH.0 | FF_DONTCARE.0) as u32,
-        w!("Noto Sans CJK KR"),
+        w!("SUIT"),
     )
 }
 

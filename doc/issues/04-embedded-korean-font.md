@@ -20,12 +20,12 @@
 
 ## 결정
 
-- **Noto Sans CJK KR Regular** 1파일을 `assets/fonts/`에 포함.
+- **SUIT Regular** 1파일을 `assets/fonts/`에 포함 (OFL, 약 580KB).
 - `AddFontMemResourceEx`로 메모리 등록 후 `WM_SETFONT`로 `EDIT`, 한/영 버튼, 항상 위 체크박스에 적용.
 - `OFL.txt` 라이선스 고지 포함.
 - 등록 실패 시 Windows 기본 폰트 fallback으로 계속 동작.
 
 ## 트레이드오프
 
-- 실행 파일 크기 증가 (Regular 1개로 제한).
-- 더 작은 오픈 폰트(Pretendard, SUIT 등)로 교체 검토 여지는 남음.
+- 실행 파일 크기: Noto CJK KR(약 16MB) 대비 SUIT Regular(약 580KB)로 대폭 감소.
+- 더 작은 KS X 1001 2,350자 서브셋(약 375KB)으로 추가 축소 여지는 남음.

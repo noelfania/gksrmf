@@ -22,7 +22,7 @@
 - 한/영 모드 전환 (상태바 클릭, F1)
 - 상태바 항상 위 체크박스, 트레이 컨텍스트 메뉴
 - 설정 영속화(JSON), 창 위치·크기 저장, 시작 프로그램 레지스트리 동기화
-- 내장 한글 폰트 (Noto Sans CJK KR)
+- 내장 한글 폰트 (SUIT Regular)
 - Windows 표준 Unicode 클립보드 복사/붙여넣기
 
 ### 1.3 Out-of-Scope
@@ -70,7 +70,7 @@
 
 ### 2.5 폰트
 
-- Noto Sans CJK KR Regular를 `include_bytes`로 내장, `AddFontMemResourceEx` 등록 후 `WM_SETFONT` 적용.
+- SUIT Regular를 `include_bytes`로 내장, `AddFontMemResourceEx` 등록 후 `WM_SETFONT` 적용.
 - 등록 실패 시 시스템 기본 폰트 fallback.
 
 ---
@@ -292,7 +292,7 @@ cargo build --release
 | 설정 | `src/config_store.rs` |
 | 시작 프로그램 | `src/startup_registry.rs` |
 | 내장 폰트 | `src/font_manager.rs` |
-| 폰트 에셋 | `assets/fonts/NotoSansKR-Regular.otf`, `OFL.txt` |
+| 폰트 에셋 | `assets/fonts/SUIT-Regular.ttf`, `OFL.txt` |
 | 아이콘 | `assets/` (빌드 시 embed-resource) |
 
 ---

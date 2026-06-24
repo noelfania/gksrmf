@@ -63,7 +63,7 @@
 | **常に前面** | ステータスバーのチェックボックスまたはトレイメニュー |
 | **トレイ常駐** | タスクバーに表示せず、トレイアイコンで常駐 |
 | **設定の保存** | ウィンドウ位置・サイズ、常に前面、起動時自動実行 (`config.json`) |
-| **内蔵ハングルフォント** | Noto Sans CJK KR — ハングルフォントがない環境でも表示をサポート |
+| **内蔵ハングルフォント** | SUIT Regular — ハングルフォントがない環境でも表示をサポート |
 | **Unicode コピー** | Windows 標準クリップボード (`CF_UNICODETEXT`) で他アプリへ貼り付け |
 
 ---
@@ -157,7 +157,7 @@ cargo test
 - **UI**: Win32 API (`EDIT`、トレイ、ネイティブウィンドウ)
 - **ハングルエンジン**: `src/hangul_engine.rs` — 二重式物理キー組み合わせ
 - **設定**: `serde` + JSON
-- **フォント**: Noto Sans CJK KR ([OFL](assets/fonts/OFL.txt))
+- **フォント**: SUIT Regular ([OFL](assets/fonts/OFL.txt))
 
 ---
 
