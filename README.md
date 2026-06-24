@@ -10,10 +10,6 @@
 </p>
 
 <p align="center">
-  <img src="./doc/images/teamImage-gmtl.svg" alt="GMTL" width="72" />
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-blue" alt="Windows 10/11" />
   <img src="https://img.shields.io/badge/rust-edition%202021-orange" alt="Rust 2021" />
   <img src="https://img.shields.io/badge/license-private-lightgrey" alt="license" />
@@ -34,12 +30,10 @@
 ## プレビュー
 
 <p align="center">
-  <img src="./doc/images/capture-app-mainWindow.png" alt="gksrmf メインウィンドウ" width="720" />
+  <img src="./doc/images/capture-app-mainWindow.png" alt="gksrmf メインウィンドウ" width="400" />
 </p>
 
 <p align="center">
-  <img src="./doc/images/app-icon.png" alt="gksrmf" width="48" />
-  <br/>
   <sub>トレイ・ウィンドウタイトルに表示されるアプリアイコン · 韓国語レイアウトがなくても物理キーで二重式ハングルを組み合わせる Win32 トレイアプリ</sub>
 </p>
 
@@ -91,6 +85,30 @@
 
 ---
 
+## ダウンロード
+
+**[GitHub Releases](https://github.com/noelfania/gksrmf/releases)** から最新版を取得できます。
+
+1. Releases ページを開く
+2. 最新の `v*` タグを選ぶ
+3. `gksrmf.exe` または `gksrmf-v*-win64.zip` をダウンロード
+4. 解凍後（zip の場合）、`gksrmf.exe` を実行
+
+初回実行時、exe と同じフォルダに `config.json` が作成されます。
+
+### リリースの作り方（開発者向け）
+
+タグを push すると GitHub Actions が自動でビルドし、Releases に exe を添付します。
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+`Cargo.toml` の `version` とタグ（`v0.1.0`）は揃えてください。
+
+---
+
 ## ビルド
 
 ### 要件
@@ -118,7 +136,8 @@ cargo build --release
 cargo test
 ```
 
-リリースバイナリ: `target/release/gksrmf.exe`
+ソースからビルドする場合の出力: `target/release/gksrmf.exe`  
+一般ユーザーは上記 [ダウンロード](#ダウンロード) の Releases を利用してください。
 
 ---
 
@@ -145,9 +164,7 @@ cargo test
 ## チーム
 
 <p align="center">
-  <img src="./doc/images/app-icon.png" alt="gksrmf" width="40" />
-  &nbsp;
-  <img src="./doc/images/teamImage-gmtl.svg" alt="GMTL" width="64" />
+  <img src="./doc/images/team-icon-gmtl.svg" alt="GMTL" width="64" />
 </p>
 
 <p align="center">
