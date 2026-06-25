@@ -33,7 +33,5 @@ jobs:
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            target/release/gksrmf.exe
-            ${{ env.ZIP_NAME }}
+          files: ${{ env.ZIP_NAME }}
           generate_release_notes: true

@@ -91,14 +91,19 @@
 
 1. Releases ページを開く
 2. 最新の `v*` タグを選ぶ
-3. `gksrmf.exe` または `gksrmf-v*-win64.zip` をダウンロード
-4. 解凍後（zip の場合）、`gksrmf.exe` を実行
+3. `gksrmf-v*-win64.zip` をダウンロード
+4. 解凍して `gksrmf.exe` を実行
+
+> **Edge でのダウンロードについて**  
+> `.exe` 単体は SmartScreen によりダウンロード自体がブロックされることがあります。  
+> そのため Releases では zip のみ配布しています。zip は通常ダウンロードできます。  
+> 初回実行時は「詳細情報」→「実行」で起動してください（未署名 exe のため）。
 
 初回実行時、exe と同じフォルダに `config.json` が作成されます。
 
 ### リリースの作り方（開発者向け）
 
-タグを push すると GitHub Actions が自動でビルドし、Releases に exe を添付します。
+タグを push すると GitHub Actions が自動でビルドし、Releases に zip を添付します。
 
 ```bash
 git tag v0.1.0
