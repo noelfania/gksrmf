@@ -20,7 +20,7 @@
 ## プレビュー
 
 <p align="center">
-  <img src="./doc/images/capture-app-mainWindow.png" alt="key2gksrmf メインウィンドウ" width="400" />
+  <img src="./doc/images/capture-app-mainWindow.gif" alt="key2gksrmf メインウィンドウ" width="400" />
 </p>
 
 
