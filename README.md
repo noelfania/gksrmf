@@ -1,12 +1,11 @@
-<p align="center">
-  <img src="./doc/images/app-icon.png" alt="key2gksrmf アプリアイコン" width="96" />
+<p align="center" style="display:flex; align-items:center; justify-content:center; gap:12px;">
+  <img src="./doc/images/app-icon.png" alt="key2gksrmf アプリアイコン" width="56" />
+  <span style="font-size:52px; font-weight:700; line-height:1;">key2gksrmf</span>
 </p>
-
-<h1 align="center">key2gksrmf</h1>
 
 <p align="center">
   <strong>物理キーをハングルに変換</strong><br/>
-  Windows に韓国語キーボードレイアウトがなくても、ハングルを入力できます。
+  Windows に韓国語キーボードレイアウトがなくても、ハングル入力可能
 </p>
 
 <p align="center">

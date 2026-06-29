@@ -152,31 +152,36 @@ export default function App() {
   return (
     <main class="page">
       <section class="hero">
-        <div class="hero-title">
-          <img
-            class="hero-icon"
-            src="https://raw.githubusercontent.com/noelfania/key2gksrmf/main/doc/images/app-icon.png"
-            alt="key2gksrmf icon"
-          />
-          <h1>key2gksrmf</h1>
+        <div class="hero-header">
+          <div class="hero-brand">
+            <img
+              class="hero-icon"
+              src="https://raw.githubusercontent.com/noelfania/key2gksrmf/main/doc/images/app-icon.png"
+              alt="key2gksrmf icon"
+            />
+            <h1>key2gksrmf</h1>
+            <span class="hero-subtitle">物理キーをハングルに変換する Web デモ</span>
+          </div>
+
+          <div class="hero-links">
+            <a
+              class="release-button pages-button"
+              href="https://github.com/noelfania/key2gksrmf"
+              target="_blank"
+              rel="noreferrer"
+            >
+              View on GitHub
+            </a>
+            <a
+              class="release-button"
+              href="https://github.com/noelfania/key2gksrmf/releases"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub Releases
+            </a>
+          </div>
         </div>
-        <p>物理キーをハングルに変換する Web デモ</p>
-        <a
-          class="release-button"
-          href="https://github.com/noelfania/key2gksrmf/releases"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub Releases
-        </a>
-        <a
-          class="release-button pages-button"
-          href="https://noelfania.github.io/key2gksrmf/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub Pages
-        </a>
       </section>
 
       <section class="editor-card">
