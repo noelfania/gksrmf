@@ -1,4 +1,4 @@
-# gksrmf — 동작 구조 및 기능 사양 (상세설계)
+# key2gksrmf — 동작 구조 및 기능 사양 (상세설계)
 
 > 대상: Windows 10/11 Win32 네이티브 단일 프로세스 트레이 앱
 >
@@ -22,7 +22,7 @@
 - 한/영 모드 전환 (상태바 클릭, F1)
 - 상태바 항상 위 체크박스, 트레이 컨텍스트 메뉴
 - 설정 영속화(JSON), 창 위치·크기 저장, 시작 프로그램 레지스트리 동기화
-- 내장 한글 폰트 (SUIT Regular)
+- 내장 한글 폰트 (Pretendard Regular)
 - Windows 표준 Unicode 클립보드 복사/붙여넣기
 
 ### 1.3 Out-of-Scope
@@ -58,7 +58,7 @@
 ### 2.3 한/영 모드
 
 - 오른쪽 Alt 토글은 Windows 시스템 키 충돌로 **채택하지 않음**.
-- 상태바 `[한] | 영` 버튼 클릭 또는 **F1**으로 전환.
+- 상태바 `ㅎ` / `A` 라디오 버튼 클릭 또는 **F1**으로 전환.
 - 한 모드: 물리키 조합. 영 모드: 기본 `EDIT` 동작에 위임.
 
 ### 2.4 문자 인코딩 및 클립보드 정책
@@ -70,7 +70,7 @@
 
 ### 2.5 폰트
 
-- SUIT Regular를 `include_bytes`로 내장, `AddFontMemResourceEx` 등록 후 `WM_SETFONT` 적용.
+- Pretendard Regular를 `include_bytes`로 내장, `AddFontMemResourceEx` 등록 후 `WM_SETFONT` 적용.
 - 등록 실패 시 시스템 기본 폰트 fallback.
 
 ---
@@ -140,17 +140,19 @@ flowchart TD
 - 작업 표시줄: 미표시 (invisible owner 창 패턴)
 - 리사이즈: `WS_THICKFRAME`, 에디터 외곽 8px 마진
 
-### 5.2 상태바 (높이 32px)
+### 5.2 상태바 (높이 42px)
 
 | 컨트롤 | ID | 설명 |
 |---|---|---|
 | 배경 | — | `STATIC` 컨테이너 |
-| 한/영 토글 | `IDC_MODE_TOGGLE` (2002) | `[한] \| 영` / `한 \| [영]` 버튼 |
-| 항상 위 | `IDC_ALWAYS_ON_TOP_CHECK` (2001) | 체크박스, 트레이 메뉴와 동기화 |
+| F1 그룹 | — | `F1` 라벨이 붙은 그룹박스 |
+| 한 모드 | `IDC_MODE_HAN` (2002) | `ㅎ` 라디오 버튼 |
+| 영 모드 | `IDC_MODE_ENG` (2003) | `A` 라디오 버튼 |
+| 항상 위 | `IDC_ALWAYS_ON_TOP_CHECK` (2001) | `Always on Top` 체크박스, 트레이 메뉴와 동기화 |
 
 ### 5.3 입력 영역
 
-- Win32 멀티라인 `EDIT` (`ES_MULTILINE`, `ES_AUTOVSCROLL`, `ES_WANTRETURN`)
+- Win32 멀티라인 `EDIT` (`ES_MULTILINE`, `ES_AUTOHSCROLL`, `ES_AUTOVSCROLL`, `ES_WANTRETURN`)
 - `edit_proc` subclass로 키 입력 가로채기
 - 내장 폰트 `WM_SETFONT` 적용
 
@@ -165,7 +167,7 @@ flowchart TD
 |---|---|
 | 싱글클릭 | 없음 |
 | 더블클릭 | 창 표시(`SW_RESTORE`) 및 포커스 |
-| 우클릭 | 항상 위, Windows 시작 시 기동, 종료 |
+| 우클릭 | Always on Top, Start with Windows, Exit |
 
 - 아이콘: 라이트/다크 테마별 리소스 (`WM_SETTINGCHANGE` 시 갱신)
 
@@ -241,7 +243,7 @@ flowchart TD
 ## 8. 시작 프로그램 레지스트리
 
 - 키: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`
-- 값 이름: `gksrmf`
+- 값 이름: `key2gksrmf` (legacy `gksrmf` 값은 시작 시 정리)
 - 앱 시작 시 `AppConfig`와 레지스트리 정합성 동기화
 - 토글 실패 시 설정 롤백 + 메시지박스
 
@@ -292,7 +294,7 @@ cargo build --release
 | 설정 | `src/config_store.rs` |
 | 시작 프로그램 | `src/startup_registry.rs` |
 | 내장 폰트 | `src/font_manager.rs` |
-| 폰트 에셋 | `assets/fonts/SUIT-Regular.ttf`, `OFL.txt` |
+| 폰트 에셋 | `assets/fonts/Pretendard-Regular.ttf`, `OFL.txt` |
 | 아이콘 | `assets/` (빌드 시 embed-resource) |
 
 ---
@@ -300,6 +302,7 @@ cargo build --release
 ## 12. 관련 문서
 
 - [서비스사양](../.cursor/rules/project-standards.mdc) — 목적, 범위, 기능 요약, 모듈 개요
+- [개발·빌드·릴리스 가이드](dev-guide.md)
 - [개발 이슈 정리](issues/issues.md) — 고민·해결·보류·미확인
 - [README](../README.md) — 사용자용 소개 (일본어)
 

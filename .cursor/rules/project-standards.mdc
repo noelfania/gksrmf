@@ -9,6 +9,7 @@ alwaysApply: true
 |---|---|---|
 | 본 문서 (`.cursor/rules/project-standards.mdc`) | **서비스사양** — 목적, 범위, 기능 요약, 모듈 개요, 코드 규칙 | 한국어 |
 | [doc/app-detailed-design.md](doc/app-detailed-design.md) | **상세설계** — 모듈·시퀀스·API·설정 스키마·구현 흐름 | 한국어 |
+| [doc/dev-guide.md](doc/dev-guide.md) | **개발 가이드** — 빌드·테스트·릴리스 | 한국어 |
 | [README.md](README.md) | 사용자·저장소 소개 | **일본어** |
 | [doc/issues/issues.md](doc/issues/issues.md) | 개발 중 고민·결정·이슈 기록 | 한국어 |
 
@@ -23,7 +24,7 @@ alwaysApply: true
 
 | 항목 | 내용 |
 |---|---|
-| 프로젝트명 | gksrmf |
+| 프로젝트명 | key2gksrmf |
 | 서비스명 | 물리키를 한글로변환 |
 | 개발팀 | GMTL |
 | 개발멤버 | noelfania |

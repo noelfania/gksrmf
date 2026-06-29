@@ -1,10 +1,10 @@
 [package]
-name = "gksrmf"
-version = "0.1.112"
+name = "key2gksrmf"
+version = "0.1.1124"
 edition = "2021"
 
 [[bin]]
-name = "gksrmf"
+name = "key2gksrmf"
 path = "src/main.rs"
 
 [dependencies]

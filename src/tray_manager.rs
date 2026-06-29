@@ -15,7 +15,7 @@ use windows::{
     },
 };
 
-use crate::config_store;
+use crate::{app_info, config_store};
 
 // 트레이 아이콘 콜백 메시지 ID
 pub const WM_TRAY: u32 = WM_APP + 1;
@@ -100,7 +100,7 @@ pub unsafe fn register_tray_icon(hwnd: HWND, hinstance: HINSTANCE) -> NOTIFYICON
         ..Default::default()
     };
 
-    let tip = "gksrmf";
+    let tip = app_info::APP_NAME;
     let tip_wide: Vec<u16> = tip.encode_utf16().collect();
     let len = tip_wide.len().min(nid.szTip.len() - 1);
     nid.szTip[..len].copy_from_slice(&tip_wide[..len]);
@@ -127,17 +127,17 @@ pub unsafe fn show_context_menu(hwnd: HWND, cfg: &config_store::AppConfig) {
     } else {
         MF_STRING
     };
-    AppendMenuW(hmenu, always_on_top_flag, IDM_ALWAYS_ON_TOP as usize, w!("항상 위")).ok();
+    AppendMenuW(hmenu, always_on_top_flag, IDM_ALWAYS_ON_TOP as usize, w!("Always on Top")).ok();
 
     let startup_flag = if cfg.start_with_windows {
         MF_STRING | MF_CHECKED
     } else {
         MF_STRING
     };
-    AppendMenuW(hmenu, startup_flag, IDM_START_WITH_WINDOWS as usize, w!("Windows 시작 시 기동")).ok();
+    AppendMenuW(hmenu, startup_flag, IDM_START_WITH_WINDOWS as usize, w!("Start with Windows")).ok();
 
     AppendMenuW(hmenu, MF_SEPARATOR, 0, None).ok();
-    AppendMenuW(hmenu, MF_STRING, IDM_EXIT as usize, w!("종료")).ok();
+    AppendMenuW(hmenu, MF_STRING, IDM_EXIT as usize, w!("Exit")).ok();
 
     let mut pt = POINT::default();
     GetCursorPos(&mut pt).ok();

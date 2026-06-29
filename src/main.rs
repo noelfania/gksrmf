@@ -1,4 +1,4 @@
-// gksrmf — Win32 트레이 앱 진입점
+// key2gksrmf — Win32 트레이 앱 진입점
 // 트레이 아이콘 상주, 에디터 창, 실시간 한글 변환
 
 #![windows_subsystem = "windows"]
@@ -11,6 +11,7 @@ mod font_manager;
 mod hangul_engine;
 mod startup_registry;
 mod tray_manager;
+mod app_info;
 
 use windows::{
     core::*,
@@ -41,7 +42,10 @@ const BST_CHECKED_RAW: usize = 1;
 static mut G_HWND_MAIN: HWND = HWND(0 as _);
 static mut G_HWND_EDIT: HWND = HWND(0 as _);
 static mut G_HWND_STATUS_BAR: HWND = HWND(0 as _);
-static mut G_HWND_MODE_LABEL: HWND = HWND(0 as _);
+static mut G_HWND_MODE_GROUP: HWND = HWND(0 as _);
+static mut G_HWND_MODE_GROUP_LABEL: HWND = HWND(0 as _);
+static mut G_HWND_MODE_HAN: HWND = HWND(0 as _);
+static mut G_HWND_MODE_ENG: HWND = HWND(0 as _);
 static mut G_HWND_TOPMOST_CHECK: HWND = HWND(0 as _);
 static mut G_CONFIG: Option<config_store::AppConfig> = None;
 static mut G_NOTIFY_ICON_DATA: Option<NOTIFYICONDATAW> = None;
@@ -85,6 +89,35 @@ fn map_physical_key_to_eng(vk: u32, shift: bool) -> Option<char> {
     };
 
     Some(mapped)
+}
+
+fn is_modifier_key(vk: u32) -> bool {
+    vk == VK_SHIFT.0 as u32 || vk == VK_CONTROL.0 as u32
+}
+
+fn is_word_boundary(ch: char) -> bool {
+    ch.is_whitespace()
+        || ch.is_ascii_punctuation()
+        || matches!(ch, '·' | '…' | '—' | '–' | '「' | '」' | '『' | '』')
+}
+
+fn is_punctuation_boundary(ch: char) -> bool {
+    is_word_boundary(ch) && !ch.is_whitespace()
+}
+
+fn find_ctrl_backspace_delete_from(chars: &[char], cursor: usize) -> usize {
+    let mut delete_from = cursor.min(chars.len());
+
+    while delete_from > 0 && chars[delete_from - 1].is_whitespace() {
+        delete_from -= 1;
+    }
+    if delete_from > 0 && is_punctuation_boundary(chars[delete_from - 1]) {
+        return delete_from - 1;
+    }
+    while delete_from > 0 && !is_word_boundary(chars[delete_from - 1]) {
+        delete_from -= 1;
+    }
+    delete_from
 }
 
 unsafe fn composer_mut() -> &'static mut hangul_engine::HangulComposer {
@@ -132,16 +165,26 @@ unsafe fn commit_composition() {
     }
 }
 
-unsafe fn set_mode_label_text(mode: InputMode) {
-    if G_HWND_MODE_LABEL == HWND(0 as _) {
+unsafe fn sync_mode_radio(mode: InputMode) {
+    if G_HWND_MODE_HAN == HWND(0 as _) || G_HWND_MODE_ENG == HWND(0 as _) {
         return;
     }
-    let text = match mode {
-        InputMode::Han => "[한] | 영",
-        InputMode::Eng => "한 | [영]",
+    let (han_checked, eng_checked) = match mode {
+        InputMode::Han => (BST_CHECKED_RAW, BST_UNCHECKED_RAW),
+        InputMode::Eng => (BST_UNCHECKED_RAW, BST_CHECKED_RAW),
     };
-    let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
-    let _ = SetWindowTextW(G_HWND_MODE_LABEL, PCWSTR(wide.as_ptr()));
+    SendMessageW(
+        G_HWND_MODE_HAN,
+        BM_SETCHECK,
+        WPARAM(han_checked),
+        LPARAM(0),
+    );
+    SendMessageW(
+        G_HWND_MODE_ENG,
+        BM_SETCHECK,
+        WPARAM(eng_checked),
+        LPARAM(0),
+    );
 }
 
 unsafe fn sync_topmost_checkbox(is_on: bool) {
@@ -163,7 +206,18 @@ unsafe fn toggle_input_mode() {
         InputMode::Han => InputMode::Eng,
         InputMode::Eng => InputMode::Han,
     };
-    set_mode_label_text(G_INPUT_MODE);
+    sync_mode_radio(G_INPUT_MODE);
+}
+
+unsafe fn focus_editor() {
+    if G_HWND_EDIT != HWND(0 as _) {
+        let _ = SetFocus(G_HWND_EDIT);
+    }
+}
+
+unsafe fn toggle_input_mode_and_focus_editor() {
+    toggle_input_mode();
+    focus_editor();
 }
 
 unsafe fn cleanup_embedded_font() {
@@ -173,7 +227,8 @@ unsafe fn cleanup_embedded_font() {
 }
 
 unsafe fn focus_existing_instance() {
-    if let Ok(hwnd) = FindWindowW(w!("gksrmf_wnd"), None) {
+    let class_name = app_info::to_wide(app_info::APP_WINDOW_CLASS);
+    if let Ok(hwnd) = FindWindowW(PCWSTR(class_name.as_ptr()), None) {
         if hwnd != HWND(0 as _) {
             let _ = ShowWindow(hwnd, SW_RESTORE);
             let _ = SetForegroundWindow(hwnd);
@@ -188,7 +243,8 @@ unsafe fn cleanup_single_instance_mutex() {
 }
 
 unsafe fn acquire_single_instance() -> bool {
-    let mutex = match CreateMutexW(None, false, w!("Local\\gksrmf_single_instance")) {
+    let mutex_name = app_info::to_wide(app_info::APP_MUTEX_NAME);
+    let mutex = match CreateMutexW(None, false, PCWSTR(mutex_name.as_ptr())) {
         Ok(mutex) => mutex,
         Err(_) => {
             // mutex 생성 실패 시 앱 사용성 저하를 막기 위해 단일 실행 가드는 건너뛴다.
@@ -274,13 +330,7 @@ unsafe fn handle_ctrl_backspace(hwnd: HWND) {
     if cursor > chars.len() {
         cursor = chars.len();
     }
-    let mut delete_from = cursor;
-    while delete_from > 0 && chars[delete_from - 1].is_whitespace() {
-        delete_from -= 1;
-    }
-    while delete_from > 0 && !chars[delete_from - 1].is_whitespace() {
-        delete_from -= 1;
-    }
+    let delete_from = find_ctrl_backspace_delete_from(&chars, cursor);
     set_selection(hwnd, delete_from as u32, cursor as u32);
     replace_selection(hwnd, "");
     set_selection(hwnd, delete_from as u32, delete_from as u32);
@@ -310,11 +360,12 @@ unsafe fn run() {
 
     let hinstance: HINSTANCE = GetModuleHandleW(None).unwrap().into();
 
-    let owner_class_name = w!("gksrmf_owner_wnd");
+    let owner_class_name = app_info::to_wide(app_info::APP_OWNER_WINDOW_CLASS);
+    let owner_title = app_info::to_wide(app_info::APP_NAME);
     let owner_wc = WNDCLASSW {
         lpfnWndProc: Some(owner_wnd_proc),
         hInstance: hinstance,
-        lpszClassName: owner_class_name,
+        lpszClassName: PCWSTR(owner_class_name.as_ptr()),
         ..Default::default()
     };
     RegisterClassW(&owner_wc);
@@ -322,8 +373,8 @@ unsafe fn run() {
     // 작업 표시줄 숨김을 위해 실제 창의 owner로만 쓰는 보이지 않는 창
     let hwnd_owner = CreateWindowExW(
         WINDOW_EX_STYLE(0),
-        owner_class_name,
-        w!("gksrmf_owner"),
+        PCWSTR(owner_class_name.as_ptr()),
+        PCWSTR(owner_title.as_ptr()),
         WS_OVERLAPPED,
         0,
         0,
@@ -336,11 +387,12 @@ unsafe fn run() {
     )
     .unwrap();
 
-    let class_name = w!("gksrmf_wnd");
+    let class_name = app_info::to_wide(app_info::APP_WINDOW_CLASS);
+    let window_title = app_info::to_wide(&app_info::window_title());
     let wc = WNDCLASSW {
         lpfnWndProc: Some(wnd_proc),
         hInstance: hinstance,
-        lpszClassName: class_name,
+        lpszClassName: PCWSTR(class_name.as_ptr()),
         hIcon: tray_manager::load_themed_icon(hinstance),
         hCursor: LoadCursorW(None, IDC_ARROW).unwrap(),
         hbrBackground: HBRUSH((COLOR_WINDOW.0 + 1) as _),
@@ -373,8 +425,8 @@ unsafe fn run() {
 
     let hwnd = CreateWindowExW(
         ex_style,
-        class_name,
-        w!("gksrmf"),
+        PCWSTR(class_name.as_ptr()),
+        PCWSTR(window_title.as_ptr()),
         style,
         start_x,
         start_y,
@@ -401,10 +453,7 @@ unsafe fn run() {
     let mut msg = MSG::default();
     while GetMessageW(&mut msg, None, 0, 0).as_bool() {
         if msg.message == WM_KEYDOWN && msg.wParam.0 as u32 == VK_F1 {
-            toggle_input_mode();
-            if G_HWND_EDIT != HWND(0 as _) {
-                let _ = SetFocus(G_HWND_EDIT);
-            }
+            toggle_input_mode_and_focus_editor();
             continue;
         }
         let _ = TranslateMessage(&msg);
@@ -453,10 +502,11 @@ unsafe fn toggle_start_with_windows() {
     } else {
         // 실패 시 상태 원복
         cfg.start_with_windows = !cfg.start_with_windows;
+        let app_name = app_info::to_wide(app_info::APP_NAME);
         MessageBoxW(
             None,
             w!("시작 프로그램 레지스트리 설정에 실패했습니다."),
-            w!("gksrmf"),
+            PCWSTR(app_name.as_ptr()),
             MB_ICONERROR | MB_OK,
         );
     }
@@ -469,10 +519,28 @@ unsafe extern "system" fn wnd_proc(
     lparam: LPARAM,
 ) -> LRESULT {
     match msg {
+        WM_KEYDOWN | WM_SYSKEYDOWN => {
+            if wparam.0 as u32 == VK_F1 {
+                toggle_input_mode_and_focus_editor();
+                return LRESULT(0);
+            }
+            DefWindowProcW(hwnd, msg, wparam, lparam)
+        }
+
+        WM_CTLCOLORBTN | WM_CTLCOLORSTATIC => {
+            let hdc = HDC(wparam.0 as *mut core::ffi::c_void);
+            let _ = SetBkMode(hdc, OPAQUE);
+            let _ = SetBkColor(hdc, COLORREF(GetSysColor(COLOR_BTNFACE)));
+            LRESULT(GetSysColorBrush(COLOR_BTNFACE).0 as isize)
+        }
+
         WM_CREATE => {
             let controls = editor_window::create_editor_controls(hwnd);
             G_HWND_STATUS_BAR = controls.hwnd_status_bar;
-            G_HWND_MODE_LABEL = controls.hwnd_mode_label;
+            G_HWND_MODE_GROUP = controls.hwnd_mode_group;
+            G_HWND_MODE_GROUP_LABEL = controls.hwnd_mode_group_label;
+            G_HWND_MODE_HAN = controls.hwnd_mode_han;
+            G_HWND_MODE_ENG = controls.hwnd_mode_eng;
             G_HWND_TOPMOST_CHECK = controls.hwnd_topmost_check;
             G_HWND_EDIT = controls.hwnd_edit;
 
@@ -484,7 +552,7 @@ unsafe extern "system" fn wnd_proc(
             ));
 
             G_INPUT_MODE = InputMode::Han;
-            set_mode_label_text(G_INPUT_MODE);
+            sync_mode_radio(G_INPUT_MODE);
 
             if let Some(cfg) = G_CONFIG.as_ref() {
                 sync_topmost_checkbox(cfg.always_on_top);
@@ -495,9 +563,13 @@ unsafe extern "system" fn wnd_proc(
 
             if let Some(font) = font_manager::load_embedded_font() {
                 let hfont = font.hfont();
+                let small_hfont = font.small_hfont();
                 font_manager::apply_font_to_control(G_HWND_EDIT, hfont);
-                font_manager::apply_font_to_control(G_HWND_MODE_LABEL, hfont);
-                font_manager::apply_font_to_control(G_HWND_TOPMOST_CHECK, hfont);
+                font_manager::apply_font_to_control(G_HWND_MODE_GROUP, hfont);
+                font_manager::apply_font_to_control(G_HWND_MODE_GROUP_LABEL, small_hfont);
+                font_manager::apply_font_to_control(G_HWND_MODE_HAN, hfont);
+                font_manager::apply_font_to_control(G_HWND_MODE_ENG, hfont);
+                font_manager::apply_font_to_control(G_HWND_TOPMOST_CHECK, small_hfont);
                 G_EMBEDDED_FONT = Some(font);
             }
             LRESULT(0)
@@ -508,7 +580,10 @@ unsafe extern "system" fn wnd_proc(
             let h = ((lparam.0 >> 16) & 0xFFFF) as i32;
             editor_window::resize_editor_controls(
                 G_HWND_STATUS_BAR,
-                G_HWND_MODE_LABEL,
+                G_HWND_MODE_GROUP,
+                G_HWND_MODE_GROUP_LABEL,
+                G_HWND_MODE_HAN,
+                G_HWND_MODE_ENG,
                 G_HWND_TOPMOST_CHECK,
                 G_HWND_EDIT,
                 w,
@@ -527,9 +602,21 @@ unsafe extern "system" fn wnd_proc(
             }
 
             match ctrl_id as u32 {
-                editor_window::IDC_MODE_TOGGLE => {
+                editor_window::IDC_MODE_HAN => {
                     if notif == BN_CLICKED as u16 {
-                        toggle_input_mode();
+                        commit_composition();
+                        G_INPUT_MODE = InputMode::Han;
+                        sync_mode_radio(G_INPUT_MODE);
+                        if G_HWND_EDIT != HWND(0 as _) {
+                            let _ = SetFocus(G_HWND_EDIT);
+                        }
+                    }
+                }
+                editor_window::IDC_MODE_ENG => {
+                    if notif == BN_CLICKED as u16 {
+                        commit_composition();
+                        G_INPUT_MODE = InputMode::Eng;
+                        sync_mode_radio(G_INPUT_MODE);
                         if G_HWND_EDIT != HWND(0 as _) {
                             let _ = SetFocus(G_HWND_EDIT);
                         }
@@ -634,6 +721,16 @@ unsafe extern "system" fn edit_proc(
         let ctrl_pressed = (GetAsyncKeyState(VK_CONTROL.0 as i32) as u16 & 0x8000) != 0;
         let shift_pressed = (GetAsyncKeyState(VK_SHIFT.0 as i32) as u16 & 0x8000) != 0;
 
+        if key == VK_F1 {
+            toggle_input_mode_and_focus_editor();
+            G_SUPPRESS_NEXT_WM_CHAR = true;
+            return LRESULT(0);
+        }
+
+        if is_modifier_key(key) {
+            return CallWindowProcW(G_ORIG_EDIT_PROC, hwnd, msg, wparam, lparam);
+        }
+
         if ctrl_pressed && key == 'A' as u32 {
             commit_composition();
             set_selection(hwnd, 0, u32::MAX);
@@ -705,6 +802,8 @@ mod tests {
         assert_eq!(map_physical_key_to_eng('G' as u32, false), Some('g'));
         assert_eq!(map_physical_key_to_eng('G' as u32, true), Some('g'));
         assert_eq!(map_physical_key_to_eng(VK_BACKSPACE, false), None);
+        assert_eq!(map_physical_key_to_eng('T' as u32, true), Some('T'));
+        assert!(is_modifier_key(VK_SHIFT.0 as u32));
     }
 
     #[test]
@@ -733,5 +832,26 @@ mod tests {
         }
         assert_eq!(format!("{committed}{composing}"), "한국어이");
         assert_eq!(composer.pop_key(), "ㅇ");
+    }
+
+    #[test]
+    fn test_ctrl_backspace_korean_word_boundary() {
+        let chars: Vec<char> = "입력한다? 입".chars().collect();
+        let cursor = chars.len();
+        assert_eq!(find_ctrl_backspace_delete_from(&chars, cursor), "입력한다? ".chars().count());
+    }
+
+    #[test]
+    fn test_ctrl_backspace_deletes_punctuation_at_boundary() {
+        let chars: Vec<char> = "입력한다?".chars().collect();
+        let cursor = chars.len();
+        assert_eq!(find_ctrl_backspace_delete_from(&chars, cursor), "입력한다".chars().count());
+    }
+
+    #[test]
+    fn test_ctrl_backspace_whitespace_boundary() {
+        let chars: Vec<char> = "hello   world".chars().collect();
+        let cursor = chars.len();
+        assert_eq!(find_ctrl_backspace_delete_from(&chars, cursor), "hello   ".chars().count());
     }
 }

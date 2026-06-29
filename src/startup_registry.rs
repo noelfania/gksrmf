@@ -1,5 +1,5 @@
 // Windows 시작 프로그램 레지스트리 등록/해제 모듈
-// HKCU\Software\Microsoft\Windows\CurrentVersion\Run 에 "gksrmf" 값을 관리한다
+// HKCU\Software\Microsoft\Windows\CurrentVersion\Run 에 "key2gksrmf" 값을 관리한다
 
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::WIN32_ERROR;
@@ -8,11 +8,13 @@ use windows::Win32::System::Registry::{
     HKEY_CURRENT_USER, KEY_READ, KEY_SET_VALUE, REG_SZ,
 };
 
+use crate::app_info;
+
 // 레지스트리 값이 존재하지 않을 때 반환되는 오류 코드
 const ERROR_FILE_NOT_FOUND: WIN32_ERROR = WIN32_ERROR(2);
 
-const APP_NAME: &str = "gksrmf";
 const RUN_KEY: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+const LEGACY_APP_NAME: &str = "gksrmf";
 
 fn to_wide(s: &str) -> Vec<u16> {
     s.encode_utf16().chain(std::iter::once(0)).collect()
@@ -21,7 +23,7 @@ fn to_wide(s: &str) -> Vec<u16> {
 /// 현재 레지스트리에 등록되어 있는지 조회한다
 pub fn is_registered() -> bool {
     let key_wide = to_wide(RUN_KEY);
-    let name_wide = to_wide(APP_NAME);
+    let name_wide = to_wide(app_info::APP_NAME);
     unsafe {
         let mut hkey = Default::default();
         if RegOpenKeyExW(
@@ -61,7 +63,7 @@ pub fn register() -> bool {
     };
 
     let key_wide = to_wide(RUN_KEY);
-    let name_wide = to_wide(APP_NAME);
+    let name_wide = to_wide(app_info::APP_NAME);
     let val_wide = to_wide(&exe_str);
     // REG_SZ 값은 u8 바이트 슬라이스로 전달
     let val_bytes: Vec<u8> = val_wide
@@ -98,7 +100,7 @@ pub fn register() -> bool {
 /// 레지스트리에서 시작 프로그램 등록을 해제한다
 pub fn unregister() -> bool {
     let key_wide = to_wide(RUN_KEY);
-    let name_wide = to_wide(APP_NAME);
+    let name_wide = to_wide(app_info::APP_NAME);
     unsafe {
         let mut hkey = Default::default();
         if RegOpenKeyExW(
@@ -120,8 +122,29 @@ pub fn unregister() -> bool {
     }
 }
 
+fn unregister_legacy_app_name() {
+    let key_wide = to_wide(RUN_KEY);
+    let name_wide = to_wide(LEGACY_APP_NAME);
+    unsafe {
+        let mut hkey = Default::default();
+        if RegOpenKeyExW(
+            HKEY_CURRENT_USER,
+            PCWSTR(key_wide.as_ptr()),
+            0,
+            KEY_SET_VALUE,
+            &mut hkey,
+        )
+        .is_ok()
+        {
+            let _ = RegDeleteValueW(hkey, PCWSTR(name_wide.as_ptr()));
+            let _ = RegCloseKey(hkey);
+        }
+    }
+}
+
 /// 앱 시작 시 레지스트리와 설정값의 정합성을 맞춘다
 pub fn sync_on_startup(want_startup: bool) {
+    unregister_legacy_app_name();
     let actual = is_registered();
     if want_startup && !actual {
         register();

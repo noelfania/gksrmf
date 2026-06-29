@@ -20,12 +20,13 @@
 
 ## 결정
 
-- **SUIT Regular** 1파일을 `assets/fonts/`에 포함 (OFL, 약 580KB).
+- **Pretendard Regular** 1파일을 `assets/fonts/`에 포함 (OFL, 약 2.6MB).
 - `AddFontMemResourceEx`로 메모리 등록 후 `WM_SETFONT`로 `EDIT`, 한/영 버튼, 항상 위 체크박스에 적용.
 - `OFL.txt` 라이선스 고지 포함.
 - 등록 실패 시 Windows 기본 폰트 fallback으로 계속 동작.
 
 ## 트레이드오프
 
-- 실행 파일 크기: Noto CJK KR(약 16MB) 대비 SUIT Regular(약 580KB)로 대폭 감소.
-- 더 작은 KS X 1001 2,350자 서브셋(약 375KB)으로 추가 축소 여지는 남음.
+- 실행 파일 크기: Noto CJK KR(약 16MB) 대비 Pretendard Regular(약 2.6MB)로 감소.
+- SUIT Regular(약 580KB)는 더 작지만 `줫`처럼 일부 음절 글리프 윤곽이 비어 실제 입력창에서 보이지 않는 문제가 있어 제외했다.
+- 더 작은 서브셋을 만들 때도 `줫`, `줬` 등 사용자 입력 음절의 실제 윤곽 존재 여부를 함께 검증한다.

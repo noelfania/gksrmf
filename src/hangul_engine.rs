@@ -464,4 +464,23 @@ mod tests {
         assert_eq!(composer.pop_key(), "ㅇ");
         assert_eq!(composer.pop_key(), "");
     }
+
+    #[test]
+    fn test_jwot_batchim() {
+        assert_eq!(convert_eng_to_kor("wnjT"), "줬");
+        assert_eq!(convert_eng_to_kor("wnjt"), "줫");
+    }
+
+    #[test]
+    fn test_composer_jwot_batchim() {
+        let mut composer = HangulComposer::new();
+        let mut committed = String::new();
+        let mut composing = String::new();
+        for ch in "wnjT".chars() {
+            let step = composer.feed_key(ch);
+            committed.push_str(&step.committed);
+            composing = step.composing;
+        }
+        assert_eq!(format!("{committed}{composing}"), "줬");
+    }
 }

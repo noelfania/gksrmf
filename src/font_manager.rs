@@ -12,20 +12,25 @@ use windows::{
 pub struct EmbeddedFont {
     mem_handle: Option<HANDLE>,
     hfont: HFONT,
+    small_hfont: HFONT,
 }
 
 impl EmbeddedFont {
     pub fn hfont(&self) -> HFONT {
         self.hfont
     }
+
+    pub fn small_hfont(&self) -> HFONT {
+        self.small_hfont
+    }
 }
 
-const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/SUIT-Regular.ttf");
+const FONT_DATA: &[u8] = include_bytes!("../assets/fonts/Pretendard-Regular.ttf");
 
-unsafe fn create_ui_font() -> HFONT {
+unsafe fn create_ui_font(height: i32) -> HFONT {
     // 기본 UI 크기에서 과도하게 커지지 않도록 고정 높이 사용
     CreateFontW(
-        -16,
+        height,
         0,
         0,
         0,
@@ -38,7 +43,7 @@ unsafe fn create_ui_font() -> HFONT {
         CLIP_DEFAULT_PRECIS.0 as u32,
         CLEARTYPE_QUALITY.0 as u32,
         (DEFAULT_PITCH.0 | FF_DONTCARE.0) as u32,
-        w!("SUIT"),
+        w!("Pretendard"),
     )
 }
 
@@ -51,8 +56,17 @@ pub unsafe fn load_embedded_font() -> Option<EmbeddedFont> {
         &mut count,
     );
 
-    let hfont = create_ui_font();
+    let hfont = create_ui_font(-16);
     if hfont == HFONT(0 as _) {
+        if mem_handle != HANDLE(0 as _) {
+            let _ = RemoveFontMemResourceEx(mem_handle);
+        }
+        return None;
+    }
+
+    let small_hfont = create_ui_font(-14);
+    if small_hfont == HFONT(0 as _) {
+        let _ = DeleteObject(HGDIOBJ(hfont.0));
         if mem_handle != HANDLE(0 as _) {
             let _ = RemoveFontMemResourceEx(mem_handle);
         }
@@ -66,6 +80,7 @@ pub unsafe fn load_embedded_font() -> Option<EmbeddedFont> {
             Some(mem_handle)
         },
         hfont,
+        small_hfont,
     })
 }
 
@@ -79,6 +94,9 @@ pub unsafe fn apply_font_to_control(hwnd: HWND, hfont: HFONT) {
 pub unsafe fn cleanup_embedded_font(font: EmbeddedFont) {
     if font.hfont != HFONT(0 as _) {
         let _ = DeleteObject(HGDIOBJ(font.hfont.0));
+    }
+    if font.small_hfont != HFONT(0 as _) {
+        let _ = DeleteObject(HGDIOBJ(font.small_hfont.0));
     }
     if let Some(handle) = font.mem_handle {
         let _ = RemoveFontMemResourceEx(handle);
