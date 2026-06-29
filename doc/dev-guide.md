@@ -18,6 +18,21 @@ git push origin v0.1.0
 - `Cargo.toml`의 `version`과 태그(`v0.1.0`)는 맞춰 둡니다.
 - Releases에는 `key2gksrmf-v*-win64.zip`만 올립니다（Edge SmartScreen으로 exe 단독 다운로드가 막히는 경우가 있어 zip만 배포）.
 
+## GitHub Pages (웹 데모)
+
+- 워크플로: [.github/workflows/pages.yml](../.github/workflows/pages.yml)
+- 배포 URL: `https://noelfania.github.io/key2gksrmf/`
+- `main` 브랜치 push 시 자동 배포
+
+로컬 실행/빌드:
+
+```bash
+cd web
+npm install
+npm run dev
+npm run build
+```
+
 ---
 
 ## 빌드 환경

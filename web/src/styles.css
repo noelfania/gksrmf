@@ -1,0 +1,106 @@
+:root {
+  font-family: "Pretendard", "Noto Sans CJK KR", system-ui, -apple-system, sans-serif;
+  color: #1f2937;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.hero {
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.hero p {
+  margin: 8px 0 12px;
+}
+
+.release-button {
+  display: inline-block;
+  padding: 8px 12px;
+  margin-right: 8px;
+  border-radius: 8px;
+  background: #0b5fff;
+  color: #fff;
+  text-decoration: none;
+}
+
+.pages-button {
+  background: #111827;
+}
+
+.editor-card {
+  background: #fff;
+  border: 1px solid #d4dbe8;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mode-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0;
+  padding: 6px 10px 8px;
+  border: 1px solid #c6cfde;
+  border-radius: 6px;
+}
+
+.mode-box legend {
+  font-size: 0.9rem;
+  padding: 0 4px;
+}
+
+.aot {
+  font-size: 0.9rem;
+  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor {
+  width: 100%;
+  min-height: 420px;
+  resize: vertical;
+  padding: 10px;
+  border: 1px solid #cfd6e4;
+  border-radius: 8px;
+  font: 16px/1.5 "Pretendard", "Noto Sans CJK KR", sans-serif;
+}

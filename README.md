@@ -39,6 +39,17 @@
 ---
 
 
+## Web デモ
+
+**[GitHub Pages](https://noelfania.github.io/key2gksrmf/)** でブラウザ版エディタを試せます。
+
+- `F1` または `ㅎ / A` で韓/英モード切り替え
+- 物理キー基準の二式ハングル入力（例: `gksrmf` → `한글`）
+- Windows ネイティブ版のダウンロードは下記 Releases を利用
+
+---
+
+
 ## ダウンロード
 
 **[GitHub Releases](https://github.com/noelfania/key2gksrmf/releases)** から `key2gksrmf-v*-win64.zip` をダウンロードし、解凍して `key2gksrmf.exe` を実行してください。
@@ -50,6 +61,6 @@
 
 初回実行時、exe と同じフォルダに `config.json` が作成されます。
 
-開発者向け（ビルド・リリース手順）: [doc/dev-guide.md](doc/dev-guide.md)
+開発者向け（ビルド・リリース・Pages）: [doc/dev-guide.md](doc/dev-guide.md)
 
 

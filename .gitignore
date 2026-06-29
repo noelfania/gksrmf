@@ -8,6 +8,10 @@ nul
 config.json
 config.json.bak
 
+# Web (SolidJS/Vite)
+web/node_modules/
+web/dist/
+
 # Windows
 Thumbs.db
 Desktop.ini
