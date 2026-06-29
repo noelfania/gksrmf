@@ -8,7 +8,7 @@
 
 ## プレビュー
 
-<p align="center">
+<p>
   <img src="./doc/images/capture-app-mainWindow.gif" alt="key2gksrmf メインウィンドウ" width="400" />
 </p>
 
